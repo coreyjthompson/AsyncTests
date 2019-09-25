@@ -12,7 +12,7 @@ namespace AsyncTests
         static void Main(string[] args)
         {
             //var app = new BreakfastApplication();
-            //var app = new Application();
+            //var app = new SpeedTestApplication();
             //var app = new ProcessingTasksAsTheyCompleteApplication();
             var app = new TaskWhenAllApplication();
 
@@ -21,7 +21,7 @@ namespace AsyncTests
             Console.Read();
         }
 
-        public class Application
+        public class SpeedTestApplication
         {
             public async void Execute()
             {
@@ -247,13 +247,23 @@ namespace AsyncTests
             public async void Execute()
             {
                 //await ProcessTasksAsync();
-                await ProcessTasksAsync2();
+                //await ProcessTasksAsync2();
+                //await ProcessTasksAsync3();
+                //await ProcessTasksAsync4();
+                await ProcessTasksAsync5();
             }
 
             static async Task ExampleTaskAsync(int val)
             {
                 await Task.Delay(TimeSpan.FromSeconds(val));
                 Console.WriteLine(val);
+            }
+
+            static async Task<int> ExampleTaskAsync2(int val)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(val));
+
+                return val;
             }
 
             /// <summary>
@@ -294,24 +304,55 @@ namespace AsyncTests
                 await Task.WhenAll(taskList);
             }
 
-            private static Task ThrowInvalidOperationExceptionAsync() => throw new NotImplementedException();
-            private static Task ThrowNotImplementedExceptionAsync() => throw new InvalidOperationException();
 
-            static async Task AllExceptionsAsync()
+            static async Task ProcessTasksAsync3()
             {
-                var task1 = ThrowNotImplementedExceptionAsync();
-                var task2 = ThrowInvalidOperationExceptionAsync();
+                Task task1 = ExampleTaskAsync(2);
+                Task task2 = ExampleTaskAsync(3);
+                Task task3 = ExampleTaskAsync(1);
 
-                Task allTasks = Task.WhenAll(task1, task2);
-                try
+                Console.WriteLine("this code is directly after setting the tasks");
+                var taskList = new List<Task>();
+                var taskArray = new[] { task1, task2, task3 };
+
+                foreach (var task in taskArray)
                 {
-                    await allTasks;
+                    taskList.Add(task);
                 }
-                catch
-                {
-                    AggregateException allExceptions = allTasks.Exception;
-                }
+
+                Task.WhenAll(taskList);
+
+                Console.WriteLine("this code is directly after awaiting WhenAll");
             }
+
+
+            static async Task ProcessTasksAsync4()
+            {
+                Task<int> task1 = ExampleTaskAsync2(2);
+                Task<int> task2 = ExampleTaskAsync2(3);
+                Task<int> task3 = ExampleTaskAsync2(1);
+
+                Console.WriteLine("this code is directly after setting the tasks");
+                Console.WriteLine(await task1);
+                Console.WriteLine(await task2);
+                Console.WriteLine(await task3);
+                Console.WriteLine("this code is directly after awaiting them all");
+
+
+            }
+
+            static async Task ProcessTasksAsync5()
+            {
+                Console.WriteLine("this code is directly after setting the tasks");
+                await ExampleTaskAsync(2);
+                await ExampleTaskAsync(3);
+                await ExampleTaskAsync(1);
+                Console.WriteLine("this code is directly after awaiting them all");
+
+            }
+
+
+
         }
 
         public class BreakfastApplication
